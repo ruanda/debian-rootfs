@@ -1,0 +1,39 @@
+{{- $image := or .image "buster-amd64.tar.gz" -}}
+
+architecture: amd64
+
+actions:
+  - action: debootstrap
+    suite: buster
+    mirror: http://deb.debian.org/debian/
+    variant: minbase
+    components:
+      - main
+      - contrib
+      - non-free
+
+  - action: overlay
+    source: apt-config
+
+  - action: apt
+    packages:
+      [ locales,
+        vim ]
+
+  - action: overlay
+    source: config
+
+  - action: run
+    chroot: true
+    script: scripts/setup-systemd.sh
+
+  - action: run
+    chroot: true
+    script: scripts/setup-alternatives.sh
+
+  - action: run
+    chroot: true
+    script: scripts/setup-locale.sh
+
+  - action: pack
+    file: {{ $image }}
